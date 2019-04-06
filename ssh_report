@@ -1,22 +1,22 @@
 #!/bin/bash
 
-# This script looks for connection attempts on sshd log and reports them to my email every 6h.
+# This script looks for connection attempts on sshd log and reports them to my email every 24h.
 # crontab entry:
-# 0 0,6,12,18 * * * /paht/to/ssh_report 
+# 0 0 * * * /paht/to/ssh_report 
 
-export NOLOGIN=$(journalctl --since="$(date -d -6hours +\%F\ \%H):00:00" --until="$(date +\%F\ \%H):00:00" -u sshd | grep -iE "Did" | 
+export NOLOGIN=$(journalctl --since="$(date -d -24hours +\%F\ \%H):00:00" --until="$(date +\%F\ \%H):00:00" -u sshd@*.service| grep -iE "Did" | 
 	nl | sed ':a;N;$!ba;s/\n/<br>/g')
 
-export FAILED=$(journalctl --since="$(date -d -6hours +\%F\ \%H):00:00" --until="$(date +\%F\ \%H):00:00" -u sshd | grep -iE "Failed" |
+export FAILED=$(journalctl --since="$(date -d -24hours +\%F\ \%H):00:00" --until="$(date +\%F\ \%H):00:00" -u sshd@*.service | grep -iE "Failed" |
 	nl | sed ':a;N;$!ba;s/\n/<br>/g')
 
-export SUCCESS=$(journalctl --since="$(date -d -6hours +\%F\ \%H):00:00" --until="$(date +\%F\ \%H):00:00" -u sshd | grep -iE "Accepted publickey" |
+export SUCCESS=$(journalctl --since="$(date -d -24hours +\%F\ \%H):00:00" --until="$(date +\%F\ \%H):00:00" -u sshd@*.service | grep -iE "Accepted publickey" |
 	nl | sed ':a;N;$!ba;s/\n/<br>/g')
 
 
 # Email settings
 export EMAILFROM="From: SSH Report"
-export EMAILSUBJECT="Subject: Login Summaries from $(date -d -6hours +\%H):00 to $(date +\%H):00"
+export EMAILSUBJECT="Subject: Login Summaries from $(date -d -1days +'%d/%m/%y')"
 export CONTENTTYPE="Content-Type: text/html; charset=\"us-ascii\""
 export EMAILALERTTO="my@email.com"
 
