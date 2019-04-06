@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# This script looks for connection attempts on sshd log and reports them to my email every 6h.
+# crontab entry:
+# 0 0,6,12,18 * * * /paht/to/ssh_report 
+
+export NOLOGIN=$(journalctl --since="$(date -d -6hours +\%F\ \%H):00:00" --until="$(date +\%F\ \%H):00:00" -u sshd | grep -iE "Did" | 
+	nl | sed ':a;N;$!ba;s/\n/<br>/g')
+
+export FAILED=$(journalctl --since="$(date -d -6hours +\%F\ \%H):00:00" --until="$(date +\%F\ \%H):00:00" -u sshd | grep -iE "Failed" |
+	nl | sed ':a;N;$!ba;s/\n/<br>/g')
+
+export SUCCESS=$(journalctl --since="$(date -d -6hours +\%F\ \%H):00:00" --until="$(date +\%F\ \%H):00:00" -u sshd | grep -iE "Accepted publickey" |
+	nl | sed ':a;N;$!ba;s/\n/<br>/g')
+
+
+# Email settings
+export EMAILFROM="From: SSH Report"
+export EMAILSUBJECT="Subject: Login Summaries from $(date -d -6hours +\%H):00 to $(date +\%H):00"
+export CONTENTTYPE="Content-Type: text/html; charset=\"us-ascii\""
+export EMAILALERTTO="my@email.com"
+
+
+if [ -n "$FAILED" ] || [ -n "$SUCCESS" ]; then
+        echo -e "$EMAILFROM\n$EMAILSUBJECT\n$CONTENTTYPE\n\n
+		 <html>
+		 <body>
+		 <b>Failed logins:</b><br>
+		 <font color=\"red\">
+		 $FAILED<br><br>
+		 </font>
+		 <b>No login attempt:</b><br>
+		 <font color=\"red\">
+		 $NOLOGIN<br><br>
+		 </font>
+		 <b>Successful logins:</b><br>
+		 <font color=\"blue\">
+		 $SUCCESS
+		 </font>
+		 </body>
+		 </html>" | /usr/bin/ssmtp $EMAILALERTTO
+fi
+
