@@ -18,10 +18,10 @@ export SUCCESS=$(journalctl --since="$(date -d -24hours +\%F\ \%H):00:00" --unti
 export EMAILFROM="From: SSH Report"
 export EMAILSUBJECT="Subject: Login Summaries from $(date -d -1days +'%d/%m/%y')"
 export CONTENTTYPE="Content-Type: text/html; charset=\"us-ascii\""
-export EMAILALERTTO="my@email.com"
+export EMAILALERTTO="my email here"
 
 
-if [ -n "$FAILED" ] || [ -n "$SUCCESS" ]; then
+if [ -n "$FAILED$SUCCESS$NOLOGIN" ]; then
         echo -e "$EMAILFROM\n$EMAILSUBJECT\n$CONTENTTYPE\n\n
 		 <html>
 		 <body>
